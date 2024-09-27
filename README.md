@@ -2,7 +2,7 @@
 
 Port of libuv to C3 language
 
-## Instalation
+## Installation
 
 - Install libuv to your OS
 - Inside your project libs directory run:
