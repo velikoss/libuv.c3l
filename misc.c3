@@ -1,5 +1,6 @@
 module uv::misc;
 import uv;
+import std::os::win32;
 
 const BSD_LIKE = env::FREEBSD || env::OPENBSD || env::DARWIN;
 
@@ -20,9 +21,14 @@ struct UVBuf {
 import std::thread::os;
 import std::os::posix;
 
-def UVThread = Pthread_t;
-def UVMutex = Pthread_mutex_t;
-def UVRWLock = Pthread_rwlock_t;
+def UVThread = Pthread_t @if(!env::WIN32);
+def UVMutex = Pthread_mutex_t @if(!env::WIN32);
+def UVMutex = Win32_CRITICAL_SECTION @if(env::WIN32);
+def UVRWLock = Pthread_rwlock_t @if(!env::WIN32);
+struct UVRWLock @if(env::WIN32) {
+    void* read_write_lock_;
+    CUChar[72] padding_;
+}
 
 struct UVRead @if(env::WIN32) {
     inline UVRequiredFields requiredFields;
@@ -60,6 +66,7 @@ extern fn CInt uv_inet_pton(CInt af, char* src, void* dst) @extern("uv_inet_pton
 extern fn char* uv_strerror(CInt err) @extern("uv_strerror");
 extern fn char* uv_err_name(CInt err) @extern("uv_err_name");
 extern fn UVBuf uv_buf_init(char* base, usz len) @extern("uv_buf_init");
+extern fn void uv_sleep(CUInt msec);
 
 module uv::tree(<TreeType>);
 
