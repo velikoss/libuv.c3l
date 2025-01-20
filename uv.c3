@@ -617,7 +617,7 @@ struct UVTimer {
   // unix
   UVTimerCb timer_cb @if(!env::WIN32);
   union node @if(!env::WIN32) {
-    void[3]* heap;
+    void*[3]* heap;
     UV__Queue queue;
   }
   CULongLong timeout @if(!env::WIN32);
