@@ -1773,9 +1773,3 @@ def UVFsPollCb = fn void* (UVFsPoll* handle,
                             UVStat* curr);
 
 def UVSignalCb = fn void* (UVSignal* handle, CLong signum);
-
-fn CInt main(String[] args)
-{
-	io::printn("Hello, World!");
-	return 0;
-}
