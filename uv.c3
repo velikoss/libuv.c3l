@@ -1773,3 +1773,65 @@ def UVFsPollCb = fn void* (UVFsPoll* handle,
                             UVStat* curr);
 
 def UVSignalCb = fn void* (UVSignal* handle, CLong signum);
+
+enum UVLoopOption : int (int code) {
+  UV_LOOP_BLOCK_SIGNAL = 0,
+  UV_METRICS_IDLE_TIME = 1,
+  UV_LOOP_USE_IO_URING_SQPOLL = 2
+
+}
+
+enum UVRunMode : int (int code) {
+  UV_RUN_DEFAULT = 0,
+  UV_RUN_ONCE = 1,
+  UV_RUN_NOWAIT = 2
+}
+
+extern fn CUInt uv_version();
+
+extern fn CChar* uv_version_string();
+
+def UVMallocFunc = fn void* (CLongLong size);
+def UVReallocFunc = fn void* (void* ptr, CLongLong size);
+def UVCallocFunc = fn void* (CLongLong count, CLongLong size);
+def UVFreeFunc = fn void (void* ptr);
+
+extern fn void uv_library_shutdown();
+
+extern fn CInt uv_replace_allocator(UVMallocFunc malloc_func,
+                                     UVReallocFunc realloc_func,
+                                     UVCallocFunc calloc_func,
+                                     UVFreeFunc free_func);
+
+extern fn UVLoop* uv_default_loop();
+
+extern fn CInt uv_loop_init(UVLoop* loop);
+
+extern fn CInt uv_loop_close(UVLoop* loop);
+
+
+extern fn CLongLong uv_loop_size();
+
+extern fn CInt uv_loop_alive(UVLoop* loop);
+
+extern fn CInt uv_loop_configure(UVLoop* loop, UVLoopOption option, ...);
+
+extern fn CInt uv_loop_fork(UVLoop* loop);
+
+extern fn CInt uv_run(UVLoop* loop, UVRunMode mode);
+
+extern fn void uv_stop(UVLoop* loop);
+
+extern fn void uv_ref(UVHandle* handle);
+
+extern fn void uv_unref(UVHandle* handle);
+
+extern fn CInt uv_has_ref(UVHandle* handle);
+
+extern fn void uv_update_time(UVLoop* loop);
+
+extern fn CLongLong uv_now(UVLoop* loop);
+
+extern fn CInt uv_backend_fd(UVLoop* loop);
+
+extern fn CInt uv_backend_timeout(UVLoop* loop);
