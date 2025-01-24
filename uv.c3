@@ -1708,71 +1708,71 @@ struct UVMetrics {
   CULongLong*[13]* reserved;
 }
 
-def UVAllocCb = fn void* (UVHandle* handle,
+def UVAllocCb = fn void (UVHandle* handle,
                            CLong suggestedSize,
                            UVBuf* buf);
 
-def UVReadCb = fn void* (UVStream* stream,
+def UVReadCb = fn void (UVStream* stream,
                           CLong nread,
                           UVBuf* buf);
 
-def UVWriteCb = fn void* (UVWrite* req, CLong status);
+def UVWriteCb = fn void (UVWrite* req, CLong status);
 
-def UVConnectCb = fn void* (UVConnect* req, CLong status);
+def UVConnectCb = fn void (UVConnect* req, CLong status);
 
-def UVShutdownCb = fn void* (UVShutdown* req, CLong status);
+def UVShutdownCb = fn void (UVShutdown* req, CLong status);
 
-def UVConnectionCb = fn void* (UVStream* server, CLong status);
+def UVConnectionCb = fn void (UVStream* server, CLong status);
 
-def UVCloseCb = fn void* (UVHandle* handle);
+def UVCloseCb = fn void (UVHandle* handle);
 
-def UVPollCb = fn void* (UVPoll* handle, CLong status, CLong events);
+def UVPollCb = fn void (UVPoll* handle, CLong status, CLong events);
 
-def UVTimerCb = fn void* (UVTimer* handle);
+def UVTimerCb = fn void (UVTimer* handle);
 
-def UVAsyncCb = fn void* (UVAsync* handle);
+def UVAsyncCb = fn void (UVAsync* handle);
 
-def UVPrepareCb = fn void* (UVPrepare* handle);
+def UVPrepareCb = fn void (UVPrepare* handle);
 
-def UVCheckCb = fn void* (UVCheck* handle);
+def UVCheckCb = fn void (UVCheck* handle);
 
-def UVIdleCb = fn void* (UVIdle* handle);
+def UVIdleCb = fn void (UVIdle* handle);
 
-def UVExitCb = fn void* (UVProcess* req, CLongLong exitStatus, CLong termSignal);
+def UVExitCb = fn void (UVProcess* req, CLongLong exitStatus, CLong termSignal);
 
-def UVWalkCb = fn void* (UVHandle* handle, void* arg);
+def UVWalkCb = fn void (UVHandle* handle, void* arg);
 
-def UVFsCb = fn void* (UVFs* req);
+def UVFsCb = fn void (UVFs* req);
 
-def UVWorkCb = fn void* (UVWork* req);
+def UVWorkCb = fn void (UVWork* req);
 
-def UVAfterWorkCb = fn void* (UVWork* req, CLong status);
+def UVAfterWorkCb = fn void (UVWork* req, CLong status);
 
-def UVGetAddrInfoCb = fn void* (UVGetAddrInfo* req,
+def UVGetAddrInfoCb = fn void (UVGetAddrInfo* req,
                                  CLong status,
                                  Platform_addrinfo* res);
 
-def UVGetNameInfoCb = fn void* (UVGetNameInfo* req,
+def UVGetNameInfoCb = fn void (UVGetNameInfo* req,
                                  CLong status,
                                  CChar* hostname,
                                  CChar* service);
 
-def UVRandomCb = fn void* (UVRandom* req,
+def UVRandomCb = fn void (UVRandom* req,
                             CLong status,
                             void* buf,
                             CLong buflen);
 
-def UVFsEventCb = fn void* (UVFsEvent* handle,
+def UVFsEventCb = fn void (UVFsEvent* handle,
                              CChar* filename,
                              CLong events,
                              CLong status);
 
-def UVFsPollCb = fn void* (UVFsPoll* handle,
+def UVFsPollCb = fn void (UVFsPoll* handle,
                             CLong status,
                             UVStat* prev,
                             UVStat* curr);
 
-def UVSignalCb = fn void* (UVSignal* handle, CLong signum);
+def UVSignalCb = fn void (UVSignal* handle, CLong signum);
 
 enum UVLoopOption : int (int code) {
   UV_LOOP_BLOCK_SIGNAL = 0,
@@ -1787,15 +1787,59 @@ enum UVRunMode : int (int code) {
   UV_RUN_NOWAIT = 2
 }
 
+def UVThreadCb = fn void (void* arg);
+
+enum UVThreadCreateFlags : int (int code) {
+  UV_THREAD_NO_FLAGS = 0x00,
+  UV_THREAD_HAS_STACK_SIZE = 0x01
+}
+
+struct UVThreadOptions {
+  CUInt flags;
+  CLongLong stack_size;
+  /* More fields may be added at any time. */
+}
+
+extern fn CInt uv_thread_create(UVThread* tid, UVThreadCb entry, void* arg);
+extern fn CInt uv_thread_detach(UVThread* tid);
+
+extern fn CInt uv_thread_create_ex(UVThread* tid,
+                                  UVThreadOptions* params,
+                                  UVThreadCb entry,
+                                  void* arg);
+extern fn CInt uv_thread_setaffinity(UVThread* tid,
+                                    CChar* cpumask,
+                                    CChar* oldmask,
+                                    CLongLong mask_size);
+extern fn CInt uv_thread_getaffinity(UVThread* tid,
+                                    CChar* cpumask,
+                                    CLongLong mask_size);
+extern fn CInt uv_thread_getcpu();
+extern fn UVThread uv_thread_self();
+extern fn CInt uv_thread_join(UVThread *tid);
+extern fn CInt uv_thread_equal(UVThread* t1, UVThread* t2);
+extern fn CInt uv_thread_setname(CChar* name);
+extern fn CInt uv_thread_getname(UVThread* tid, CChar* name, CLongLong size);
+
 extern fn CUInt uv_version();
 
 extern fn CChar* uv_version_string();
+
+
+extern fn CInt uv_translate_sys_error(CInt sys_errno);
+
+extern fn CChar* uv_strerror(CInt err);
+extern fn CChar* uv_strerror_r(CInt err, CChar* buf, CLongLong buflen);
+
+extern fn CChar* uv_err_name(CInt err);
+extern fn CChar* uv_err_name_r(CInt err, CChar* buf, CLongLong buflen);
 
 def UVMallocFunc = fn void* (CLongLong size);
 def UVReallocFunc = fn void* (void* ptr, CLongLong size);
 def UVCallocFunc = fn void* (CLongLong count, CLongLong size);
 def UVFreeFunc = fn void (void* ptr);
 
+extern fn void uv_sleep(CUInt msec);
 extern fn void uv_library_shutdown();
 
 extern fn CInt uv_replace_allocator(UVMallocFunc malloc_func,
