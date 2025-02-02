@@ -8,47 +8,42 @@ struct UVBuf {
 
 const UV_MSAFD_PROVIDER_COUNT = 4;
 
-struct UV_LOOP_PRIVATE_FIELDS_t {
-    Win32_HANDLE iocp;
-    /* The current time according to the event loop. in msecs. */ 
-    CULongLong time;
-    /* Tail of a single-linked circular queue of pending reqs. If the queue */
-    /* is empty, tail_ is NULL. If there is only one item, */ 
-    /* tail_->next_req == tail_ */
-    UVReq* pending_reqs_tail;
-    /* Head of a single-linked list of closed handles */
-    UVHandle* endgame_handles;
-    /* TODO(bnoordhuis) Stop heap-allocating |timer_heap| in libuv v2.x. */
-    void* timer_heap;
-    /* Lists of active loop (prepare / check / idle) watchers */
-    UVPrepare* prepare_handles;
-    UVCheck* check_handles;
-    UVIdle* idle_handles;
-    /* This pointer will refer to the prepare/check/idle handle whose */
-    /* callback is scheduled to be called next. This is needed to allow */ 
-    /* safe removal from one of the lists above while that list being */
-    /* iterated over. */
-    UVPrepare* next_prepare_handle;
-    UVCheck* next_check_handle;
-    UVIdle* next_idle_handle;
-    /* This handle holds the peer sockets for the fast variant of uv_poll_t */
-    Win32_SOCKET[UV_MSAFD_PROVIDER_COUNT] poll_peer_sockets;
-    /* No longer used. */ 
-    CUInt active_tcp_streams;
-    /* No longer used. */ 
-    CUInt active_udp_streams;
-    /* Counter to started timer */
-    CULongLong timer_counter; 
-    /* Threadpool */
-    UV__Queue wq;
-    UVMutex wq_mutex;
-    UVAsync wq_async;
-}
-
-struct UV_HANDLE_PRIVATE_FIELDS_t {
-    UVHandle* endgame_next;
-    CUInt flags;
-}
+// struct UV_LOOP_PRIVATE_FIELDS_t {
+//     Win32_HANDLE iocp;
+//     /* The current time according to the event loop. in msecs. */ 
+//     CULongLong time;
+//     /* Tail of a single-linked circular queue of pending reqs. If the queue */
+//     /* is empty, tail_ is NULL. If there is only one item, */ 
+//     /* tail_->next_req == tail_ */
+//     UVReq* pending_reqs_tail;
+//     /* Head of a single-linked list of closed handles */
+//     UVHandle* endgame_handles;
+//     /* TODO(bnoordhuis) Stop heap-allocating |timer_heap| in libuv v2.x. */
+//     void* timer_heap;
+//     /* Lists of active loop (prepare / check / idle) watchers */
+//     UVPrepare* prepare_handles;
+//     UVCheck* check_handles;
+//     UVIdle* idle_handles;
+//     /* This pointer will refer to the prepare/check/idle handle whose */
+//     /* callback is scheduled to be called next. This is needed to allow */ 
+//     /* safe removal from one of the lists above while that list being */
+//     /* iterated over. */
+//     UVPrepare* next_prepare_handle;
+//     UVCheck* next_check_handle;
+//     UVIdle* next_idle_handle;
+//     /* This handle holds the peer sockets for the fast variant of uv_poll_t */
+//     Win32_SOCKET[UV_MSAFD_PROVIDER_COUNT] poll_peer_sockets;
+//     /* No longer used. */ 
+//     CUInt active_tcp_streams;
+//     /* No longer used. */ 
+//     CUInt active_udp_streams;
+//     /* Counter to started timer */
+//     CULongLong timer_counter; 
+//     /* Threadpool */
+//     UV__Queue wq;
+//     UVMutex wq_mutex;
+//     UVAsync wq_async;
+// }
 
 def Win32_LPFn_CONNECTEX = fn bool
                           (Win32_SOCKET,

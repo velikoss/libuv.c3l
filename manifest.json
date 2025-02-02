@@ -4,20 +4,20 @@
     "macos-x64" : {
       "link-args" : [],
       "dependencies" : [],
-      "linked-libraries" : ["uv"]
+      "linked-libraries" : ["libuv"]
     },
     "macos-aarch64" : {
       "link-args" : [],
       "dependencies" : [],
-      "linked-libraries" : ["uv"]
+      "linked-libraries" : ["libuv"]
     },
     "linux-x64" : {
       "link-args" : [],
       "dependencies" : [],
-      "linked-libraries" : ["uv"]
+      "linked-libraries" : ["libuv"]
     },
 	"windows-x64" : {
-		"linked-libraries" : ["uv"]
+		"linked-libraries" : ["libuv"]
 	}
   }
 }

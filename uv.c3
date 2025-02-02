@@ -101,7 +101,7 @@ struct UV__Queue {
 // typedef struct uv_loop_s uv_loop_t;
 
 struct UVLoop {
-	inline UV_LOOP_PRIVATE_FIELDS_t uv_loop_private_fields;
+	// inline UV_LOOP_PRIVATE_FIELDS_t uv_loop_private_fields;
 	/* User data - use this for whatever. */
 	void* data;
 	/* Loop reference counting. */
@@ -115,6 +115,88 @@ struct UVLoop {
 	void* internal_fields;
 	/* Internal flag to signal loop stop. */
 	CUInt stop_flag;	
+
+  // unix
+  CULong flags @if(!env::WIN32);
+  CInt backend_fd @if(!env::WIN32);
+  UV__Queue pending_queue @if(!env::WIN32);
+  UV__Queue watcher_queue @if(!env::WIN32);
+  UV__Io** watchers @if(!env::WIN32);
+  CUInt nwatchers @if(!env::WIN32);
+  CUInt nfds @if(!env::WIN32);
+  UV__Queue wq @if(!env::WIN32);
+  UVMutex wq_mutex @if(!env::WIN32);
+  UVAsync wq_async @if(!env::WIN32);
+  UVRwlue prepare_handles @if(!env::WIN32);
+  UV__Queue check_handles @if(!env::WIN32);
+  UV__Queue idle_handles @if(!env::WIN32);
+  UV__Queue async_handles @if(!env::WIN32);
+  Async_unused async_unused @if(!env::WIN32); /* TODO(bnoordhuis) Remove in libuv v2. */ 
+  UV__Io async_io_watcher @if(!env::WIN32);
+  CInt async_wfd @if(!env::WIN32);
+  struct timer_heap @if(!env::WIN32) {
+      void* min; 
+      CUInt nelts; 
+  }
+  CULongLong timer_counter @if(!env::WIN32);
+  CULongLong time @if(!env::WIN32);
+  CInt[2]* signal_pipefd @if(!env::WIN32);
+  UV__Io signal_io_watcher @if(!env::WIN32);
+  UVSignal child_watcher @if(!env::WIN32);
+  CInt emfile_fd @if(!env::WIN32);
+  // inline UV_PLATFORM_LOOP_FIELDS_t uv_platform_loop_fields;
+  CInt fs_fd @if(env::OS_TYPE == OsType.AIX);
+  UVThread cf_thread @if(env::DARWIN);
+  void* _cf_reserved @if(env::DARWIN);
+  void* cf_state @if(env::DARWIN);
+  UVMutex cf_mutex @if(env::DARWIN);
+  UVSem cf_sem @if(env::DARWIN);
+  UV__Queue cf_signals @if(env::DARWIN);
+  UV__Io inotify_read_watcher @if(env::OS_TYPE == OsType.LINUX);
+  void* inotify_watchers @if(env::OS_TYPE == OsType.LINUX);
+  CInt inotify_fd @if(env::OS_TYPE == OsType.LINUX);
+  /* For the sake of convenience and reduced #ifdef-ery in src/unix/sunos.c,
+  * add the fs_event fields even when this version of SunOS doesn't support
+  * file watching.
+  */
+  UV__Io fs_event_watcher @if(env::OS_TYPE == OsType.SOLARIS);
+  CInt fs_fd @if(env::OS_TYPE == OsType.SOLARIS);
+
+  // win
+  Win32_HANDLE iocp @if(env::WIN32);
+  /* The current time according to the event loop. in msecs. */ 
+  CULongLong time @if(env::WIN32);
+  /* Tail of a single-linked circular queue of pending reqs. If the queue */
+  /* is empty, tail_ is NULL. If there is only one item, */ 
+  /* tail_->next_req == tail_ */
+  UVReq* pending_reqs_tail @if(env::WIN32);
+  /* Head of a single-linked list of closed handles */
+  UVHandle* endgame_handles @if(env::WIN32);
+  /* TODO(bnoordhuis) Stop heap-allocating |timer_heap| in libuv v2.x. */
+  void* timer_heap @if(env::WIN32);
+  /* Lists of active loop (prepare / check / idle) watchers */
+  UVPrepare* prepare_handles @if(env::WIN32);
+  UVCheck* check_handles @if(env::WIN32);
+  UVIdle* idle_handles @if(env::WIN32);
+  /* This pointer will refer to the prepare/check/idle handle whose */
+  /* callback is scheduled to be called next. This is needed to allow */ 
+  /* safe removal from one of the lists above while that list being */
+  /* iterated over. */
+  UVPrepare* next_prepare_handle @if(env::WIN32);
+  UVCheck* next_check_handle @if(env::WIN32);
+  UVIdle* next_idle_handle @if(env::WIN32);
+  /* This handle holds the peer sockets for the fast variant of uv_poll_t */
+  Win32_SOCKET[UV_MSAFD_PROVIDER_COUNT] poll_peer_sockets @if(env::WIN32);
+  /* No longer used. */ 
+  CUInt active_tcp_streams @if(env::WIN32);
+  /* No longer used. */ 
+  CUInt active_udp_streams @if(env::WIN32);
+  /* Counter to started timer */
+  CULongLong timer_counter @if(env::WIN32); 
+  /* Threadpool */
+  UV__Queue wq @if(env::WIN32);
+  UVMutex wq_mutex @if(env::WIN32);
+  UVAsync wq_async @if(env::WIN32);
 }
 
 extern fn void* uv_loop_get_data(UVLoop*);
@@ -135,9 +217,7 @@ extern fn void uv_wtf8_to_utf16(CChar* wtf8,
 // typedef struct uv_handle_s uv_handle_t;
 
 struct UVHandle {
-	inline UV_HANDLE_PRIVATE_FIELDS_t uv_handle_private_fields;
-
-	/* public */
+  /* public */
 	void* data;
 	/* read-only */
 	UVLoop* loop;
@@ -149,6 +229,10 @@ struct UVHandle {
 		CInt fd;
 		void*[4] reserved;
 	}
+
+  UVHandle* next_closing @if(!env::WIN32);
+  UVHandle* endgame_next @if(env::WIN32);
+  CUInt flags;
 }
 
 extern fn CLongLong uv_handle_size(UVHandleType type);
@@ -169,8 +253,8 @@ extern fn CInt uv_is_active(UVHandle* handle);
 extern fn void uv_walk(UVLoop* loop, UVWalkCb walk_cb, void* arg);
 
 /* Helpers for ad hoc debugging, no API/ABI stability guaranteed. */
-extern fn void uv_prCInt_all_handles(UVLoop* loop, void* stream); // FILE* ?
-extern fn void uv_prCInt_active_handles(UVLoop* loop, void* stream); // FILE* ?
+extern fn void uv_print_all_handles(UVLoop* loop, void* stream); // FILE* ?
+extern fn void uv_print_active_handles(UVLoop* loop, void* stream); // FILE* ?
 
 extern fn void uv_close(UVHandle* handle, UVCloseCb close_cb);
 
@@ -242,7 +326,7 @@ extern fn CInt uv_fs_write(UVLoop* loop,
 // typedef struct uv_stream_s uv_stream_t;
 
 struct UVStream {
-  inline UVHandle uv_handle_fields;
+  inline UVHandle h;
   CLongLong write_queue_size;    
   UVAllocCb alloc_cb; 
   UVReadCb read_cb;
@@ -279,7 +363,7 @@ struct UVStream {
 // typedef struct uv_tcp_s uv_tcp_t;
 
 struct UVTcp {
-  inline UVStream uv_stream_fields;
+  inline UVStream s;
   // UV_TCP_PRIVATE_FIELDS
   Win32_SOCKET socket @if(env::WIN32);
   CInt delayed_error @if(env::WIN32);
@@ -371,7 +455,7 @@ extern fn CInt uv_tcp_connect(UVConnect* req,
 
 /* uv_udp_t is a subclass of uv_handle_t. */
 struct UVUdp {
-  inline UVHandle uv_handle_fields;
+  inline UVHandle h;
   /* read-only */
   /*
    * Number of bytes queued for sending. This field strictly shows how much
@@ -414,7 +498,7 @@ struct UVUdp {
  * Pipe. On Unix this is a Unix domain socket.
  */
 struct UVPipe {
-  inline UVStream uv_stream_fields;
+  inline UVStream s;
   CInt ipc; /* non-zero if this pipe is used for passing handles */
   // UV_PIPE_PRIVATE_FIELDS
   // win
@@ -496,7 +580,7 @@ enum UVTtyMode {
 }
 
 struct UVTty {
-  inline UVStream uv_stream_fields;
+  inline UVStream s;
   // UV_TTY_PRIVATE_FIELDS
   // win32
   Win32_HANDLE handle @if(env::WIN32);                                                              
@@ -557,7 +641,7 @@ extern fn CInt uv_tty_get_vterm_state(UVTtyVtermstate* state);
 // typedef struct uv_poll_s uv_poll_t;
 
 struct UVPoll {
-  inline UVHandle uv_handle_fields;
+  inline UVHandle h;
   UVPollCb poll_cb;
   // UV_POLL_PRIVATE_FIELDS
   // win
@@ -600,7 +684,7 @@ extern fn CInt uv_poll_stop(UVPoll* handle);
  * Used to get woken up at a specified time in the future.
  */
 struct UVTimer {
-  inline UVHandle uv_handle_fields;
+  inline UVHandle h;
 
   // UV_TIMER_PRIVATE_FIELDS
   // win
@@ -645,7 +729,7 @@ extern fn CULongLong uv_timer_get_due_in(UVTimer* handle);
 // typedef struct uv_prepare_s uv_prepare_t;
 
 struct UVPrepare {
-  inline UVHandle uv_handle_fields;
+  inline UVHandle h;
   // UV_PREPARE_PRIVATE_FIELDS
   // win
   UVPrepare* prepare_prev @if(env::WIN32);
@@ -663,7 +747,7 @@ extern fn CInt uv_prepare_stop(UVPrepare* prepare);
 // typedef struct uv_check_s uv_check_t;
 
 struct UVCheck {
-  inline UVHandle uv_handle_fields;
+  inline UVHandle h;
   // UV_CHECK_PRIVATE_FIELDS
   // win
   UVCheck* check_prev @if(env::WIN32);
@@ -700,7 +784,7 @@ extern fn CInt uv_idle_stop(UVIdle* idle);
 // typedef struct uv_async_s uv_async_t;
 
 struct UVAsync {
-  inline UVHandle uv_handle_fields;
+  inline UVHandle h;
   // UV_ASYNC_PRIVATE_FIELDS
   // win
   UVReq async_req @if(env::WIN32);
@@ -721,7 +805,7 @@ extern fn CInt uv_async_send(UVAsync* async);
 // typedef struct uv_process_s uv_process_t;
 
 struct UVProcessExit {                                                 
-  inline UVReq uv_req_fields;
+  inline UVReq r;
 }
 
 enum UVStdioFlags : int (int code) {
@@ -806,7 +890,7 @@ struct UVProcessOptions {
  * uv_process_t is a subclass of uv_handle_t.
  */
 struct UVProcess {
-  inline UVHandle uv_handle_fields;
+  inline UVHandle h;
   UVExitCb exit_cb;
   CInt pid;
   // UV_PROCESS_PRIVATE_FIELDS
@@ -837,7 +921,7 @@ enum UVFsEventE : CInt (CInt code) {
 }
 
 struct UVFsEvent {
-  inline UVHandle uv_handle_fields;
+  inline UVHandle h;
   /* private */
   CChar* path;
   // UV_FS_EVENT_PRIVATE_FIELDS
@@ -881,7 +965,7 @@ struct UVFsEvent {
  * uv_fs_stat() based polling file watcher.
  */
 struct UVFsPoll {
-  inline UVHandle uv_handle_fields;
+  inline UVHandle h;
   /* Private, don't touch. */
   void* poll_ctx;
 }
@@ -951,7 +1035,7 @@ extern fn CInt uv_inet_pton(CInt af, CChar* src, void* dst);
 // typedef struct uv_signal_s uv_signal_t;
 
 struct UVSignal {
-  inline UVHandle uv_handle_fields;
+  inline UVHandle h;
   UVSignalCb signal_cb;
   CInt signum;
   // UV_SIGNAL_PRIVATE_FIELDS
@@ -1001,7 +1085,7 @@ struct UVReq {
   void*[6]* reserved;
   // UV_REQ_PRIVATE_FIELDS
   // win
-  union u {                                                                     
+  union u @if(env::WIN32) {                                                                     
     /* Used by I/O operations */                                              
     struct io {                                                                  
       Win32_OVERLAPPED overlapped;                                                  
@@ -1015,7 +1099,7 @@ struct UVReq {
       Win32_WCHAR* name;                                                             
     }                                                              
   }                                                                      
-  UVReq* next_req;
+  UVReq* next_req @if(env::WIN32);
   // unix
   // empty
 }
@@ -1027,7 +1111,7 @@ struct UVReq {
  * Request object for uv_getaddrinfo.
  */
 struct UVGetAddrInfo {
-  inline UVReq uv_req_fields;
+  inline UVReq r;
   /* read-only */
   UVLoop* loop;
   /* struct addrinfo* addrinfo is marked as private, but it really isn't. */
@@ -1074,7 +1158,7 @@ const NI_MAXHOST = 1025;
 * Request object for uv_getnameinfo.
 */
 struct UVGetNameInfo {
-  inline UVReq uv_req_fields;
+  inline UVReq r;
   /* read-only */
   UVLoop* loop;
   /* host and service are marked as private, but they really aren't. */
@@ -1112,7 +1196,7 @@ extern fn CInt uv_shutdown(UVShutdown* req,
                           UVShutdownCb cb);
 
 struct UVShutdown {
-  inline UVReq uv_req_fields;
+  inline UVReq r;
   UVStream* handle;
   UVShutdownCb cb;
   // UV_SHUTDOWN_PRIVATE_FIELDS
@@ -1125,7 +1209,7 @@ struct UVShutdown {
 // typedef struct uv_write_s uv_write_t;
 /* uv_write_t is a subclass of uv_req_t. */
 struct UVWrite {
-  inline UVReq uv_req_fields;
+  inline UVReq r;
   UVWriteCb cb;
   UVStream* send_handle; /* TODO: make private and unix-only in v2.x. */
   UVStream* handle;
@@ -1161,7 +1245,7 @@ enum UVMembership : int (int code) {
 
 /* uv_connect_t is a subclass of uv_req_t. */
 struct UVConnect {
-  inline UVReq uv_req_fields;
+  inline UVReq r;
   UVConnectCb cb;
   UVStream* handle;
   // UV_CONNECT_PRIVATE_FIELDS
@@ -1175,7 +1259,7 @@ struct UVConnect {
 
 /* uv_udp_send_t is a subclass of uv_req_t. */
 struct UVUdpSend {
-  inline UVReq uv_req_fields;
+  inline UVReq r;
   UVUdp* handle;
   UVUdpSendCb cb;
   // UV_UDP_SEND_PRIVATE_FIELDS
@@ -1292,7 +1376,7 @@ enum UVFsType : int (int code) {
 
 /* uv_fs_t is a subclass of uv_req_t. */
 struct UVFs {
-  inline UVReq uv_req_fields;
+  inline UVReq r;
   UVFsType fs_type;
   UVLoop* loop;
   UVFsCb cb;
@@ -1532,7 +1616,7 @@ extern fn CInt uv_fs_statfs(UVLoop* loop,
  * uv_work_t is a subclass of uv_req_t.
  */
 struct UVWork {
-  inline UVReq uv_req_fields;
+  inline UVReq r;
   UVLoop* loop;
   UVWorkCb work_cb;
   UVAfterWorkCb after_work_cb;
@@ -1555,7 +1639,7 @@ extern fn CInt uv_cancel(UVReq* req);
 // typedef struct uv_random_s uv_random_t;
 
 struct UVRandom {
-  inline UVReq uv_req_fields;
+  inline UVReq r;
   /* read-only */
   UVLoop* loop;
   /* private */
@@ -1842,10 +1926,33 @@ def UVFreeFunc = fn void (void* ptr);
 extern fn void uv_sleep(CUInt msec);
 extern fn void uv_library_shutdown();
 
+import libc;
+
+fn void* c3_malloc(CLongLong size) {
+  io::printn("tf");
+  return libc::malloc(size);
+}
+
+fn void* c3_realloc(void* ptr, CLongLong size) {
+  return libc::realloc(ptr, size);
+}
+
+fn void* c3_calloc(CLongLong count, CLongLong size) {
+  return libc::calloc(count, size);
+}
+
+fn void c3_free(void* ptr) {
+  libc::free(ptr);
+}
+
 extern fn CInt uv_replace_allocator(UVMallocFunc malloc_func,
                                      UVReallocFunc realloc_func,
                                      UVCallocFunc calloc_func,
                                      UVFreeFunc free_func);
+
+fn void c3_mempatch() {
+  uv_replace_allocator(&c3_malloc, &c3_realloc, &c3_calloc, &c3_free);
+}
 
 extern fn UVLoop* uv_default_loop();
 

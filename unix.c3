@@ -7,43 +7,42 @@ struct UVBuf {
   CLongLong len;
 }
 
-struct UV_LOOP_PRIVATE_FIELDS_t {
-    inline UV_PLATFORM_LOOP_FIELDS_t uv_platform_loop_fields;
-    CULong flags;
-    CInt backend_fd;
-    UV__Queue pending_queue;
-    UV__Queue watcher_queue;
-    UV__Io** watchers;
-    CUInt nwatchers;
-    CUInt nfds;  
-    UV__Queue wq;
-    UVMutex wq_mutex;
-    UVAsync wq_async;
-    UVRwlue prepare_handles;
-    UV__Queue check_handles; 
-    UV__Queue idle_handles; 
-    UV__Queue async_handles; 
-    Async_unused async_unused;  /* TODO(bnoordhuis) Remove in libuv v2. */ 
-    UV__Io async_io_watcher;
-    CInt async_wfd;
-    struct timer_heap {
-        void* min; 
-        CUInt nelts; 
-    }
-    CULongLong timer_counter;
-    CULongLong time;
-    CInt[2]* signal_pipefd;
-    UV__Io signal_io_watcher;  
-    UVSignal child_watcher;
-    CInt emfile_fd;
-}
+// struct UV_LOOP_PRIVATE_FIELDS_t {
+//     inline UV_PLATFORM_LOOP_FIELDS_t uv_platform_loop_fields;
+//     CULong flags;
+//     CInt backend_fd;
+//     UV__Queue pending_queue;
+//     UV__Queue watcher_queue;
+//     UV__Io** watchers;
+//     CUInt nwatchers;
+//     CUInt nfds;  
+//     UV__Queue wq;
+//     UVMutex wq_mutex;
+//     UVAsync wq_async;
+//     UVRwlue prepare_handles;
+//     UV__Queue check_handles; 
+//     UV__Queue idle_handles; 
+//     UV__Queue async_handles; 
+//     Async_unused async_unused;  /* TODO(bnoordhuis) Remove in libuv v2. */ 
+//     UV__Io async_io_watcher;
+//     CInt async_wfd;
+//     struct timer_heap {
+//         void* min; 
+//         CUInt nelts; 
+//     }
+//     CULongLong timer_counter;
+//     CULongLong time;
+//     CInt[2]* signal_pipefd;
+//     UV__Io signal_io_watcher;  
+//     UVSignal child_watcher;
+//     CInt emfile_fd;
+// }
 
 struct UV_PLATFORM_LOOP_FIELDS_t @if(!$defined(UV_PLATFORM_LOOP_FIELDS_t)) {
     void* empty;
 }
 
 struct UV_HANDLE_PRIVATE_FIELDS_t {
-    UVHandle* next_closing;
     CUInt flags;
 }
 
