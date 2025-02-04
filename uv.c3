@@ -127,7 +127,10 @@ struct UVLoop {
   UV__Queue wq @if(!env::WIN32);
   UVMutex wq_mutex @if(!env::WIN32);
   UVAsync wq_async @if(!env::WIN32);
-  UVRwlue prepare_handles @if(!env::WIN32);
+  UVRWLock cloexec_lock @if(!env::WIN32);                                                
+  UVHandle* closing_handles @if(!env::WIN32);                                              
+  UV__Queue process_handles @if(!env::WIN32);                                           
+  UV__Queue prepare_handles @if(!env::WIN32);   
   UV__Queue check_handles @if(!env::WIN32);
   UV__Queue idle_handles @if(!env::WIN32);
   UV__Queue async_handles @if(!env::WIN32);
@@ -274,6 +277,8 @@ extern fn CInt uv_socketpair(CInt type,
 
 // typedef struct uv_dir_s uv_dir_t;
 
+import std::os::posix;
+
 struct UVDir {
   UVDirent* dirents;
   CLongLong nentries;
@@ -348,7 +353,7 @@ struct UVStream {
 
   // unix   
   UVConnect *connect_req @if(!env::WIN32);
-  UBShutdown *shutdown_req @if(!env::WIN32);   
+  UVShutdown *shutdown_req @if(!env::WIN32);   
   UV__Io io_watcher @if(!env::WIN32);
   UV__Queue write_queue @if(!env::WIN32);  
   UV__Queue write_completed_queue @if(!env::WIN32);    
@@ -1132,9 +1137,9 @@ struct UVGetAddrInfo {
   // unix
   UV__Work work_req @if(!env::WIN32);
   UVGetAddrInfoCb cb @if(!env::WIN32);
-  Unix_addrinfo* hCInts @if(!env::WIN32);
+  Unix_addrinfo* hints @if(!env::WIN32);
   CChar* hostname @if(!env::WIN32);
-  Char* service @if(!env::WIN32);
+  CChar* service @if(!env::WIN32);
   Unix_addrinfo* addrinfo @if(!env::WIN32);
   CInt retcode @if(!env::WIN32);
 }

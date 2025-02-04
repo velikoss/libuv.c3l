@@ -4,12 +4,12 @@
     "macos-x64" : {
       "link-args" : [],
       "dependencies" : [],
-      "linked-libraries" : ["libuv"]
+      "linked-libraries" : ["uv"]
     },
     "macos-aarch64" : {
       "link-args" : [],
       "dependencies" : [],
-      "linked-libraries" : ["libuv"]
+      "linked-libraries" : ["uv"]
     },
     "linux-x64" : {
       "link-args" : [],

@@ -1,6 +1,10 @@
 module libuv @if(!env::WIN32);
+import std::os::posix;
 
 def Async_unused = fn void();
+import std::thread::os;
+
+def Platform_sockaddr_in6 = void*; // todo implement ipv6
 
 struct UVBuf {
   CChar* base;
@@ -47,8 +51,34 @@ struct UV_HANDLE_PRIVATE_FIELDS_t {
 }
 
 def Unix_sa_family = CUChar;
+def UV__IoCb = fn void(UVLoop* loop, UV__Io* w, CUInt events);
 
-def Platform_sockaddr = Unix_Sockaddr;
+struct UV__Io {
+  UV__IoCb cb;
+  UV__Queue pending_queue;
+  UV__Queue watcher_queue;
+  CUInt pevents; /* Pending event mask i.e. mask at next tick. */
+  CUInt events;  /* Current event mask. */
+  CInt fd;
+  CInt rcount @if(env::BSD_FAMILY || env::DARWIN);
+  CInt wcount @if(env::BSD_FAMILY || env::DARWIN);
+}
+
+def Platform_sockaddr = Unix_sockaddr;
+def Platform_sockaddr_in = Unix_sockaddr_in;
+
+def Unix_in_addr_t = uint;
+def Unix_in_port_t = ushort;
+
+struct Unix_in_addr {
+           Unix_in_addr_t s_addr;
+       }
+
+struct Unix_sockaddr_in {
+           Unix_sa_family     sin_family;     /* AF_INET */
+           Unix_in_port_t       sin_port;       /* Port number */
+           Unix_in_addr  sin_addr;       /* IPv4 address */
+       }
 
 struct Unix_sockaddr {
 	CUChar sa_len;
@@ -56,13 +86,12 @@ struct Unix_sockaddr {
 	CChar[14]* sa_data;
 }
 
-
 struct Unix_sockaddr_storage {
 	CUChar ss_len;
 	Unix_sa_family ss_family;
-	CChar[((sizeof(__int64_t)) - sizeof(__uint8_t) - sizeof(sa_family_t))]* __ss_pad1;
+	CChar[(CLong.sizeof - CUChar.sizeof - Unix_sa_family.sizeof)]* __ss_pad1;
 	CLongLong __ss_align;
-	CChar[(128 - sizeof(__uint8_t) - sizeof(sa_family_t) - ((sizeof(__int64_t)) - sizeof(__uint8_t) - sizeof(sa_family_t)) - (sizeof(__int64_t)))]* __ss_pad2;
+	CChar[(128 - CUChar.sizeof - Unix_sa_family.sizeof - ((CLong.sizeof) - CUChar.sizeof - Unix_sa_family.sizeof) - (CLong.sizeof))]* __ss_pad2;
 }
 
 def Platform_addrinfo = Unix_addrinfo;
