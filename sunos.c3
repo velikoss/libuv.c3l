@@ -6,7 +6,3 @@ import std::net::os;
 * add the fs_event fields even when this version of SunOS doesn't support
 * file watching.
 */
-struct UV_PLATFORM_LOOP_FIELDS_t {
-    UV__Io fs_event_watcher;
-    CInt fs_fd;
-}
