@@ -6,4 +6,4 @@ struct UV_PLATFORM_LOOP_FIELDS_t {
     CInt inotify_fd;
 }
 
-const MAXHOSTNAMELEN @if(!$defined(MAXHOSTNAMELEN)) = 1024;
+const MAXHOSTNAMELEN = 1024;

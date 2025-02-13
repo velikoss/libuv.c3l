@@ -1765,10 +1765,10 @@ struct UVGroup {
 
 // typedef struct uv_utsname_s uv_utsname_t;
 struct UVUtsname {
-  CChar[256]* sysname;
-  CChar[256]* release;
-  CChar[256]* version;
-  CChar[256]* machine;
+  CChar[256] sysname;
+  CChar[256] release;
+  CChar[256] version;
+  CChar[256] machine;
   /* This struct does not contain the nodename and domainname fields present in
      the utsname type. domainname is a GNU extension. Both fields are referred
      to as meaningless in the docs. */
@@ -1991,3 +1991,5 @@ extern fn CLongLong uv_now(UVLoop* loop);
 extern fn CInt uv_backend_fd(UVLoop* loop);
 
 extern fn CInt uv_backend_timeout(UVLoop* loop);
+
+extern fn CUInt uv_available_parallelism(); 

@@ -42,9 +42,9 @@ struct UVBuf {
 //     CInt emfile_fd;
 // }
 
-struct UV_PLATFORM_LOOP_FIELDS_t @if(!$defined(UV_PLATFORM_LOOP_FIELDS_t)) {
-    void* empty;
-}
+// struct UV_PLATFORM_LOOP_FIELDS_t @if(!$defined(UV_PLATFORM_LOOP_FIELDS_t)) {
+//     void* empty;
+// }
 
 struct UV_HANDLE_PRIVATE_FIELDS_t {
     CUInt flags;

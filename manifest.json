@@ -14,7 +14,7 @@
     "linux-x64" : {
       "link-args" : [],
       "dependencies" : [],
-      "linked-libraries" : ["libuv"]
+      "linked-libraries" : ["uv"]
     },
 	"windows-x64" : {
 		"linked-libraries" : ["libuv"]
