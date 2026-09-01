@@ -1,0 +1,22 @@
+{
+  "langrev": "1",
+  "authors": [ "libuv.c3l contributors" ],
+  "version": "0.2.0",
+  "sources": [ "src/**" ],
+  "test-sources": [ "test/**" ],
+  "build-dir": "build",
+  "output": "build",
+  "linker-search-paths": [ "../uvlib" ],
+  "targets": {
+    "tests": {
+      "type": "test",
+      "opt": "O0",
+      "linked-libraries": [ "libuv", "ws2_32", "iphlpapi", "userenv", "user32", "advapi32", "dbghelp", "ole32", "shell32" ]
+    },
+    "abi_dump": {
+      "type": "executable",
+      "sources": [ "src/**", "tools/abi_dump.c3" ],
+      "linked-libraries": [ "libuv", "ws2_32", "iphlpapi", "userenv", "user32", "advapi32", "dbghelp", "ole32", "shell32" ]
+    }
+  }
+}
